@@ -1,0 +1,66 @@
+
+
+
+{% extends 'base.html' %}
+
+{% block content%}
+<div class="feed">
+
+    <!-- POST 1 -->
+    <div class="post">
+        <div class="post-header">
+            <div class="user">
+                <img src="https://via.placeholder.com/100">
+                <div>
+                    <h4>Anand Krishnan</h4>
+                    <span>Frontend Developer</span>
+                </div>
+            </div>
+            <a href="profile.html" class="view-profile">View Profile</a>
+        </div>
+
+        <img src="https://via.placeholder.com/800x400" class="project-img">
+
+        <p class="description">
+            🚀 Built a responsive portfolio website using HTML, CSS, and JavaScript.
+            Includes smooth animations and mobile-first design.
+        </p>
+
+        <div class="actions">
+            <button onclick="likePost(this)">❤️ Like</button>
+            <button onclick="sharePost()">🔗 Share</button>
+        </div>
+    </div>
+
+    <!-- POST 2 -->
+    <div class="post">
+        <div class="post-header">
+            <div class="user">
+                <img src="https://via.placeholder.com/100">
+                <div>
+                    <h4>Neha Suresh</h4>
+                    <span>UI/UX Designer</span>
+                </div>
+            </div>
+            <a href="profile.html" class="view-profile">View Profile</a>
+        </div>
+
+        <img src="https://via.placeholder.com/800x400" class="project-img">
+
+        <p class="description">
+            🎨 Designed a modern mobile app interface using Figma.
+            Focused on usability, accessibility, and minimal UI.
+        </p>
+
+        <div class="actions">
+            <button onclick="likePost(this)">❤️ Like</button>
+            <button onclick="sharePost()">🔗 Share</button>
+        </div>
+    </div>
+
+</div>
+{%endblock%}
+{% block js %}
+<script src="{{ url_for('static', filename='js/feed.js') }}"></script>
+{% endblock %}
+
