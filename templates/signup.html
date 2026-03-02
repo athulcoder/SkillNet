@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Create Account</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            font-family: "Segoe UI", Tahoma, sans-serif;
+            background: linear-gradient(135deg, #06b6d4, #22d3ee);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .signup-box {
+            width: 100%;
+            max-width: 380px;
+            background: #ffffff;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 20px 40px rgba(6, 182, 212, 0.3);
+            animation: fadeIn 0.5s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(15px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        h2 {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #0f172a;
+        }
+
+        .form-group {
+            margin-bottom: 14px;
+        }
+
+        input {
+            width: 100%;
+            padding: 11px 12px;
+            border-radius: 6px;
+            border: 1px solid #cbd5e1;
+            font-size: 14px;
+            transition: 0.2s;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #06b6d4;
+            box-shadow: 0 0 0 3px rgba(6, 182, 212, 0.2);
+        }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            margin-top: 10px;
+            border-radius: 8px;
+            border: none;
+            font-size: 16px;
+            font-weight: 600;
+            color: white;
+            background: #06b6d4; /* cyan-500 */
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        button:hover {
+            background: #0891b2;
+            box-shadow: 0 10px 20px rgba(6, 182, 212, 0.35);
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 14px;
+            font-size: 14px;
+            color: #475569;
+        }
+
+        .footer a {
+            color: #06b6d4;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .footer a:hover {
+            text-decoration: underline;
+        }
+
+
+        .app-title {
+            text-align: center;
+            font-size: 26px;
+            font-weight: 700;
+            color: #06b6d4;
+            margin-bottom: 4px;
+        }
+
+        .subtitle {
+            text-align: center;
+            font-size: 14px;
+            color: #64748b;
+            margin-bottom: 22px;
+        }
+
+    </style>
+</head>
+
+<body>
+
+<div class="signup-box">
+    <div class="app-title">SkillNet</div>
+    <div class="subtitle">Create an account</div>
+
+    <form>
+        <div class="form-group">
+            <input type="text" placeholder="Full Name" required>
+        </div>
+
+        <div class="form-group">
+            <input type="email" placeholder="Email Address" required>
+        </div>
+
+        <div class="form-group">
+            <input type="password" placeholder="Password" required>
+        </div>
+
+        <div class="form-group">
+            <input type="password" placeholder="Confirm Password" required>
+        </div>
+
+        <button type="submit">Sign Up</button>
+    </form>
+
+    <div class="footer">
+        Already have an account?
+        <a href="/login">Login</a>
+    </div>
+</div>
+
+</body>
+</html>
