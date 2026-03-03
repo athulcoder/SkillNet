@@ -1,8 +1,8 @@
 <div class="navbar">
     <div class="nav-left">
         <h2>SkillNet</h2>
-        <a href="/feed" class="nav-link active">Feed</a>
-        <a href="/search" class="nav-link">Search</a>
+        <a href="/feed" class="nav-link {% if active_page == 'feed' %} active {%endif%}">Feed</a>
+        <a href="/search" class="nav-link {% if active_page == 'search' %} active {%endif%}">Search</a>
     </div>
 
     <div class="nav-right">
@@ -10,6 +10,6 @@
         <span class="student-name">{{session.user.name}}</span>
         <img src=`{session.user.profileUrl}` class="profile-img">
         {% endif %}
-        <a href="/profile" class="profile-link">Profile</a>
+        <a href="/profile" class="profile-link {% if active_page == 'profile' %} active {%endif%}">Profile</a>
     </div>
 </div>

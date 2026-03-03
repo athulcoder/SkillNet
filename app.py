@@ -12,7 +12,7 @@ def feedPage():
 
         return data,200
     
-    return make_response(render_template('/feed.html'))
+    return make_response(render_template('/feed.html', active_page="feed"))
 
 @app.route("/search", methods=["POST", "GET"])
 def searchPage():
@@ -22,7 +22,7 @@ def searchPage():
 
         return data,200
     
-    return make_response(render_template('/search.html'))
+    return make_response(render_template('/search.html', active_page="search"))
 
 
 
@@ -35,7 +35,7 @@ def ProfilePage():
 
         return data,200
     
-    return make_response(render_template('/profile.html'))
+    return make_response(render_template('/profile.html', active_page="profile"))
 
 @app.route("/login", methods=["POST", "GET"])
 def login():
