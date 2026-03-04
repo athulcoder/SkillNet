@@ -1,10 +1,10 @@
 -- create the tables here
-
-
+-- enum
+CREATE TYPE visibility_type AS ENUM ('Public', 'Private');
 
 -- NANDANA
 CREATE TABLE Student (
-    student_id INT PRIMARY KEY  AUTO_INCREMENT,
+    student_id SERIAL PRIMARY KEY  ,
     full_name VARCHAR(100) NOT NULL,
     username VARCHAR(50) NOT NULL UNIQUE,
     email VARCHAR(100) NOT NULL UNIQUE,
@@ -20,22 +20,21 @@ CREATE TABLE Student (
 
 -- ANGEL
 CREATE TABLE Project (
-    project_id INT PRIMARY KEY AUTO_INCREMENT,
+    project_id SERIAL PRIMARY KEY ,
     user_id INT NOT NULL,
     title VARCHAR(150) NOT NULL,
     description TEXT,
     github_url VARCHAR(255),
     demo_url VARCHAR(255),
-    visibility ENUM('Public', 'Private') DEFAULT 'Public',
+    visibility visibility_type DEFAULT 'Public',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-
     FOREIGN KEY (user_id) REFERENCES Student(student_id)
     ON DELETE CASCADE
 );
 
 ---SANA
 CREATE TABLE Post (
-    post_id INT PRIMARY KEY AUTO_INCREMENT,
+    post_id SERIAL PRIMARY KEY ,
     user_id INT NOT NULL,
     caption TEXT,
     image_url VARCHAR(255),
@@ -50,7 +49,7 @@ CREATE TABLE Post (
 
 -- NAVNEETH
 CREATE TABLE IF NOT EXISTS Skill (
-    skill_id INT PRIMARY KEY  AUTO_INCREMENT,
+    skill_id SERIAL PRIMARY KEY  ,
     skill_name VARCHAR(200) NOT NULL,
     skill_category VARCHAR(200),
     description VARCHAR(200)
