@@ -3,7 +3,7 @@
 CREATE TYPE visibility_type AS ENUM ('Public', 'Private');
 
 -- NANDANA
-CREATE TABLE Student (
+CREATE TABLE IF NOT EXISTS Student (
     student_id SERIAL PRIMARY KEY  ,
     full_name VARCHAR(100) NOT NULL,
     username VARCHAR(50) NOT NULL UNIQUE,
@@ -19,7 +19,7 @@ CREATE TABLE Student (
 
 
 -- ANGEL
-CREATE TABLE Project (
+CREATE TABLE IF NOT EXISTS Project (
     project_id SERIAL PRIMARY KEY ,
     user_id INT NOT NULL,
     title VARCHAR(150) NOT NULL,
@@ -33,16 +33,16 @@ CREATE TABLE Project (
 );
 
 ---SANA
-CREATE TABLE Post (
+CREATE TABLE IF NOT EXISTS Post (
     post_id SERIAL PRIMARY KEY ,
     user_id INT NOT NULL,
     caption TEXT,
     image_url VARCHAR(255),
-    post_type VARCHAR(50),
+    post_type visibility_type DEFAULT 'Public',
     link_url VARCHAR(255),
     location VARCHAR(100),
     published_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-
+    
     FOREIGN KEY (user_id) REFERENCES Student(student_id)
         ON DELETE CASCADE
 );
@@ -74,5 +74,17 @@ CREATE TABLE IF NOT EXISTS UserFollows (
     FOREIGN KEY (follower_id) REFERENCES Student(student_id)
         ON DELETE CASCADE,
     FOREIGN KEY (following_id) REFERENCES Student(student_id)
+        ON DELETE CASCADE
+);
+
+
+CREATE TABLE IF NOT EXISTS PostLikes (
+    user_id INT,
+    post_id INT,
+    PRIMARY KEY (user_id, post_id),
+
+    FOREIGN KEY (user_id) REFERENCES Student(student_id)
+        ON DELETE CASCADE,
+    FOREIGN KEY (post_id) REFERENCES Post(post_id)
         ON DELETE CASCADE
 );
