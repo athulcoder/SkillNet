@@ -12,7 +12,7 @@ def feedPage():
 
         return data,200
     
-    return make_response(render_template('/feed.html', active_page="feed"))
+    return make_response(render_template('/feed.html', active_page="feed")),200
 
 @app.route("/search", methods=["POST", "GET"])
 def searchPage():
@@ -22,7 +22,7 @@ def searchPage():
 
         return data,200
     
-    return make_response(render_template('/search.html', active_page="search"))
+    return make_response(render_template('/search.html', active_page="search")),200
 
 
 
@@ -35,7 +35,7 @@ def ProfilePage():
 
         return data,200
     
-    return make_response(render_template('/profile.html', active_page="profile"))
+    return make_response(render_template('/profile.html', active_page="profile")),200
 
 @app.route("/login", methods=["POST", "GET"])
 def login():
@@ -77,7 +77,7 @@ def signup():
         password = request.form.get('password')
 
         if not full_name or not username or not email or not password :
-                return render_template("signup.html", error="All feilds are required")
+                return render_template("signup.html", error="All feilds are required"),401
 
         
         result = create_student(
@@ -88,7 +88,7 @@ def signup():
         )
 
         if not result:
-            return render_template("signup.html", error="User already exists")
+            return render_template("signup.html", error="User already exists"),401
 
         
         session["user"] ={
@@ -96,7 +96,7 @@ def signup():
             "username":username,
             "fullname":full_name
         }
-        return redirect(url_for("feedPage"))
+        return redirect(url_for("feedPage")),200
         
         
     
