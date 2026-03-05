@@ -7,7 +7,7 @@
 
     <div class="nav-right">
         {% if session.get("user") %}
-        <span class="student-name">{{session.user.name}}</span>
+        <span class="student-name">{{session.user.fullname}}</span>
         <img src=`{session.user.profileUrl}` class="profile-img">
         {% endif %}
         <a href="/profile" class="profile-link {% if active_page == 'profile' %} active {%endif%}">Profile</a>

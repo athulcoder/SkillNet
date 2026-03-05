@@ -1,26 +1,29 @@
 from db import get_connection
 
 
-def create_student(fullname, username, email,password,profile_pic,bio,dob,institution,location):
-    conn = get_connection()
-    cur = conn.cursor()
+def create_student(fullname, username, email,password):
+    try:
+        conn = get_connection()
+        cur = conn.cursor()
 
 
-    #check whether the user exists
-    cur.execute("SELECT COUNT(*) FROM Student where email=%s ",(email,))
+        #check whether the user exists
+        cur.execute("SELECT COUNT(*) FROM Student where email=%s ",(email,))
 
-    count = cur.fetchone()[0]
-    if(count>0):
+        count = cur.fetchone()[0]
+        if(count>0):
+            cur.close()
+            conn.close()
+            return False
+        
+
+        #create new user
+        cur.execute("INSERT INTO Student (full_name,username,email,hashed_password) VALUES (%s, %s,%s,%s);", (fullname,username,email,password))
+
+        conn.commit()
         cur.close()
         conn.close()
-        return "User already exsits"
-    
 
-    #create new user
-    cur.execute("INSERT INTO Student (full_name,username,email,hashed_password,profile_pic,bio,dob,institution) VALUES (%s, %s,%s,%s,%s,%s,%s,%s);", (fullname,username,email,password,profile_pic,bio,dob,institution))
-
-    conn.commit()
-    cur.close()
-    conn.close()
-
-    return "User Created Successfully "
+        return True
+    except Exception as e:
+        return False
