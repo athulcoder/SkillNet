@@ -1,6 +1,6 @@
 from flask import Flask, request,render_template,make_response,jsonify,session,url_for,redirect
 
-from queries.student_queries import create_student
+from queries.student_queries import create_student,check_student
 app = Flask(__name__)
 app.secret_key = "skillnetspecialkehkwefbwlfbwbefbwlbejfbjwleb"
 
@@ -41,9 +41,27 @@ def ProfilePage():
 def login():
     
     if request.method=="POST":
-        data = request.get_json()
+        email = request.form.get('email')
+        password = request.form.get('password')
+
+
+        if not email and not password:
+                return render_template("login.html", error="All feilds are required")
         
-        return data,200
+
+        user = check_student(email=email, password=password)
+
+        if not user:
+            return render_template("login.html", error="Invalid credentials entered")
+        
+        print(user)
+        session['user'] = {
+            "email":user[3],
+            "username":user[2],
+            "fullname":user[1]
+        }
+
+        return redirect(url_for("feedPage"))
     
     return make_response(render_template('/login.html'))
 
@@ -59,10 +77,8 @@ def signup():
         password = request.form.get('password')
 
         if not full_name or not username or not email or not password :
-            return jsonify({
-                "message": " All feilds are required ",
-                "success":False,
-            })
+                return render_template("signup.html", error="All feilds are required")
+
         
         result = create_student(
             full_name,

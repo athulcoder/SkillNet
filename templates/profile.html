@@ -1,9 +1,7 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<title>SkillNet | Profile</title>
+{% extends 'base.html' %}
 
+
+{%block style %}
 <style>
 * {
     margin: 0;
@@ -188,6 +186,7 @@ body {
     }
 }
 </style>
+{%endblock%}
 </head>
 
 <body>
@@ -284,6 +283,7 @@ body {
     </div>
 
 </div>
+{% block js %}
 
 <script>
 function showTab(tabId) {
@@ -294,6 +294,4 @@ function showTab(tabId) {
     event.target.classList.add('active');
 }
 </script>
-
-</body>
-</html>
+{%endblock%}

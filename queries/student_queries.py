@@ -27,3 +27,24 @@ def create_student(fullname, username, email,password):
         return True
     except Exception as e:
         return False
+    
+
+
+def check_student(email ,password):
+    try:
+        conn = get_connection()
+        cur = conn.cursor()
+        cur.execute("SELECT * FROM Student WHERE email=%s AND hashed_password = %s",(email,password))
+
+        user = cur.fetchone()
+
+        print(user)
+       
+        
+        conn.commit()
+        cur.close()
+        conn.close()
+        return user
+       
+    except Exception as e:
+        return None
