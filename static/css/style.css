@@ -216,6 +216,11 @@ body {
     font-weight: 600;
 }
 
+.student-email {
+    font-weight: 300;
+    font-size: 13px;
+    color: gray;
+}
 .profile-img {
     width: 36px;
     height: 36px;

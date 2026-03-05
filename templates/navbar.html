@@ -7,8 +7,16 @@
 
     <div class="nav-right">
         {% if session.get("user") %}
-        <span class="student-name">{{session.user.fullname}}</span>
-        <img src=`{session.user.profileUrl}` class="profile-img">
+        <div style="display: flex; flex-direction: column; gap: 1px;">
+            <span class="student-name">{{session.user.fullname}}</span>
+            <span class="student-email">{{session.user.email}}</span>
+
+        </div>
+     <img 
+        src="{{ session.user.profileUrl }}" 
+        class="profile-img"
+        onerror="this.onerror=null; this.src=`{{ url_for('static', filename='images/user.png') }}`"
+        >
         {% endif %}
         <a href="/profile" class="profile-link {% if active_page == 'profile' %} active {%endif%}">Profile</a>
     </div>

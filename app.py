@@ -35,7 +35,7 @@ def ProfilePage():
 
         return data,200
     
-    return make_response(render_template('/feed.html', active_page="feed"))
+    return make_response(render_template('/profile.html', active_page="profile"))
 
 @app.route("/login", methods=["POST", "GET"])
 def login():
