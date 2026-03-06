@@ -3,19 +3,18 @@ from functools import wraps
 import os
 import uuid
 from werkzeug.utils import secure_filename
-
+import cloudinary_config
 from queries.student_queries import create_student, check_student, get_user_by_id, update_bio, get_followers_count, get_following_count
 from queries.post_queries import create_post, get_posts_by_user, count_posts_by_user
 from queries.project_queries import create_project, get_projects_by_user, count_projects_by_user
-
+import cloudinary
+import cloudinary.uploader
 app = Flask(__name__)
 app.secret_key = os.environ.get('FLASK_SECRET_KEY', 'skillnetspecialkehkwefbwlfbwbefbwlbejfbjwleb')
 
 # Upload configuration
-UPLOAD_FOLDER = os.path.join('static', 'uploads')
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'webp'}
-os.makedirs(UPLOAD_FOLDER, exist_ok=True)
-app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+
 
 
 def allowed_file(filename):
@@ -157,7 +156,6 @@ def signup():
     return make_response(render_template('/signup.html'))
 
 
-
 @app.route('/create-post', methods=['POST'])
 @login_required
 def create_post_route():
@@ -166,29 +164,39 @@ def create_post_route():
         user_id = user.get('id')
 
         if 'image' not in request.files:
-            return render_template('profile.html', active_page='profile', error='No image provided'), 400
+            return render_template('profile.html',
+                                   active_page='profile',
+                                   error='No image provided'), 400
 
         file = request.files['image']
+
         if file and allowed_file(file.filename):
-            filename = secure_filename(file.filename)
-            ext = filename.rsplit('.', 1)[1].lower()
-            name = f"{uuid.uuid4().hex}.{ext}"
-            save_path = os.path.join(app.config['UPLOAD_FOLDER'], name)
-            file.save(save_path)
-            image_url = f"/static/uploads/{name}"
+
+            upload_result = cloudinary.uploader.upload(file)
+
+            image_url = upload_result["secure_url"]
+
         else:
-            return render_template('profile.html', active_page='profile', error='Invalid image'), 400
+            return render_template('profile.html',
+                                   active_page='profile',
+                                   error='Invalid image'), 400
 
         caption = request.form.get('caption') or ''
 
         post = create_post(user_id, caption, image_url)
+
         if not post:
-            return render_template('profile.html', active_page='profile', error='Could not create post'), 500
+            return render_template('profile.html',
+                                   active_page='profile',
+                                   error='Could not create post'), 500
 
         return redirect(url_for('ProfilePage'))
-    except Exception as e:
-        return render_template('profile.html', active_page='profile', error='Internal server error'), 500
 
+    except Exception as e:
+        print(e)
+        return render_template('profile.html',
+                               active_page='profile',
+                               error='Internal server error'), 500
 
 @app.route('/publish-project', methods=['POST'])
 @login_required
