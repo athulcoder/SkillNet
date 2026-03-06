@@ -3,79 +3,240 @@
 
 {% extends 'base.html' %}
 
-{% block content%}
+{% block content %}
 <div class="profile-container">
 
-    <div class="profile-header">
-        <img src="https://via.placeholder.com/150" class="profile-pic">
-        <div class="profile-info">
-            <h2>{{session.user.fullname}}</h2>
-            <p class="profile-username">@ {{session.user.username}}</p>
+        <div class="profile-header">
+                <img src="https://via.placeholder.com/150" class="profile-pic">
+                <div class="profile-info">
+                        <h2>{{ session.user.fullname }}</h2>
+                        <p class="profile-username">@{{ session.user.username }}</p>
 
-            <p class="profile-bio">
-                BTech CSE Student <br>
-                Web Developer | UI/UX Enthusiast <br>
-                Building SkillNet
-            </p>
+                        {% if session.user.bio %}
+                        <div class="profile-bio">
+                                <p>{{ session.user.bio }}</p>
+                                <button class="edit-btn" onclick="openBioModal()">Edit</button>
+                        </div>
+                        {% else %}
+                        <div class="profile-bio">
+                                <button class="edit-btn" onclick="openBioModal()">Add bio</button>
+                        </div>
+                        {% endif %}
 
-            <div class="profile-stats">
-                <div><strong>12</strong><span>Projects</span></div>
-                <div><strong>340</strong><span>Connections</span></div>
-                <div><strong>24</strong><span>Skills</span></div>
-            </div>
-        </div>
-    </div>
-
-    <div class="profile-section">
-        <h3>Skills</h3>
-        <div class="profile-skills">
-            <span>HTML</span>
-            <span>CSS</span>
-            <span>JavaScript</span>
-            <span>Java</span>
-            <span>DBMS</span>
-            <span>UI/UX</span>
-        </div>
-    </div>
-
-    <div class="profile-tabs">
-        <div class="profile-tab active" onclick="showTab('projects')">PROJECTS</div>
-        <div class="profile-tab" onclick="showTab('tagged')">TAGGED</div>
-    </div>
-
-    <div id="projects" class="profile-content active">
-        <div class="profile-grid">
-
-            <div class="profile-card">
-                <img src="https://via.placeholder.com/400x200">
-                <div class="profile-card-content">
-                    <h4>SkillNet</h4>
-                    <p>Skill-based networking platform for students.</p>
+                        <div class="profile-stats">
+                                <div><strong>{{ post_count or 0 }}</strong><span>Posts</span></div>
+                                <div><strong>{{ project_count or 0 }}</strong><span>Projects</span></div>
+                                <div><strong>{{ followers_count or 0 }}</strong><span>Followers</span></div>
+                                <div><strong>{{ following_count or 0 }}</strong><span>Following</span></div>
+                        </div>
                 </div>
-            </div>
-
-            <div class="profile-card">
-                <img src="https://via.placeholder.com/400x200">
-                <div class="profile-card-content">
-                    <h4>Rentify</h4>
-                    <p>Rental platform for temporary access.</p>
-                </div>
-            </div>
-
         </div>
-    </div>
+
+        <div class="profile-tabs">
+                <div class="profile-tab active" onclick="showTab(event,'projects')">PROJECTS</div>
+                <div class="profile-tab" onclick="showTab(event,'posts')">POSTS</div>
+        </div>
+
+        <!-- Projects Tab -->
+        <div id="projects" class="profile-content active">
+                <button class="publish-btn" onclick="openProjectModal()">Publish Project</button>
+
+                <div class="profile-grid">
+                        {% for project in projects %}
+                        <div class="profile-card">
+                                <div class="profile-card-content">
+                                        <h4>{{ project.title }}</h4>
+                                        <p>{{ project.description }}</p>
+                                        <div class="card-links">
+                                                {% if project.github_url %}
+                                                <a href="{{ project.github_url }}" target="_blank">Github</a>
+                                                {% endif %}
+                                                {% if project.demo_url %}
+                                                <a href="{{ project.demo_url }}" target="_blank">Demo</a>
+                                                {% endif %}
+                                        </div>
+                                </div>
+                        </div>
+                        {% else %}
+                        <p>No projects yet.</p>
+                        {% endfor %}
+                </div>
+        </div>
+
+        <!-- Posts Tab -->
+        <div id="posts" class="profile-content">
+                <button class="publish-btn" onclick="openPostModal()">Upload Post</button>
+
+                <div class="profile-grid">
+                        {% for post in posts %}
+                        <div class="profile-card">
+                                {% if post.image_url %}
+                                <img src="{{ post.image_url }}" alt="post image">
+                                {% endif %}
+                                <div class="profile-card-content">
+                                        <p>{{ post.caption }}</p>
+                                </div>
+                        </div>
+                        {% else %}
+                        <p>No posts yet.</p>
+                        {% endfor %}
+                </div>
+        </div>
 
 </div>
-{%endblock%}
+
+<!-- Modals -->
+<div id="bioModal" class="modal" role="dialog" aria-modal="true" style="display:none">
+    <div class="modal-box">
+        <button class="modal-close" onclick="closeModal('bioModal')">&times;</button>
+        <h3>Edit Bio</h3>
+        <form method="POST" action="/edit-bio">
+            <textarea name="bio" rows="4" style="width:100%">{{ session.user.bio or '' }}</textarea>
+            <div style="text-align:right;margin-top:8px">
+                <button type="submit" class="publish-btn">Save</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div id="projectModal" class="modal" role="dialog" aria-modal="true" style="display:none">
+    <div class="modal-box">
+        <button class="modal-close" onclick="closeModal('projectModal')">&times;</button>
+        <h3>Publish Project</h3>
+        <form method="POST" action="/publish-project">
+            <input name="title" type="text" placeholder="Project Title" required style="width:100%;margin-bottom:8px">
+            <textarea name="description" rows="4" placeholder="Description" style="width:100%;margin-bottom:8px"></textarea>
+            <input name="github_url" type="text" placeholder="Github URL" style="width:100%;margin-bottom:8px">
+            <input name="demo_url" type="text" placeholder="Demo URL" style="width:100%;margin-bottom:8px">
+            <select name="visibility" style="width:100%;margin-bottom:8px">
+                <option value="Public">Public</option>
+                <option value="Private">Private</option>
+            </select>
+            <div style="text-align:right">
+                <button type="submit" class="publish-btn">Publish</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div id="postModal" class="modal" role="dialog" aria-modal="true" style="display:none">
+    <div class="modal-box">
+        <button class="modal-close" onclick="closeModal('postModal')">&times;</button>
+        <h3 class="mb-2">Create Post</h3>
+        <form method="POST" action="/create-post" enctype="multipart/form-data">
+            <label style="display:block;margin-bottom:8px;font-weight:600">Image</label>
+            <div style="display:flex;gap:10px;align-items:flex-start;margin-bottom:10px;flex-wrap:wrap">
+                <div style="flex:1;min-width:160px;max-width:320px">
+                    <div id="postImagePreview" style="display:none;border-radius:8px;overflow:hidden;border:1px solid #e6eef0">
+                        <img id="postPreviewImg" src="" alt="preview" style="width:100%;height:220px;object-fit:cover;display:block">
+                    </div>
+                    <div id="postImagePlaceholder" style="display:block;border-radius:8px;border:1px dashed #cbd5e1;padding:18px;text-align:center;color:#94a3b8">
+                        No image selected
+                    </div>
+                </div>
+
+                <div style="flex:1;min-width:200px">
+                    <input id="postImageInput" name="image" type="file" accept="image/*" style="padding:8px" required onchange="handlePostImage(event)">
+                    <div style="margin-top:10px;display:flex;gap:8px">
+                        <button type="button" class="publish-btn" onclick="chooseImage()" style="background:#06b6d4">Choose Image</button>
+                        <button type="button" class="publish-btn" onclick="removePostImage()" style="background:#ef4444">Remove</button>
+                    </div>
+                </div>
+            </div>
+
+            <label style="display:block;margin-bottom:6px;font-weight:600">Caption</label>
+            <textarea name="caption" rows="3" placeholder="Write a caption..." style="width:100%;margin-bottom:8px"></textarea>
+
+            <div style="text-align:right">
+                <button type="submit" class="publish-btn">Post</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+{% endblock %}
+
 {% block js %}
 
-<script>
-function showTab(tabId) {
-    document.querySelectorAll('.content').forEach(c => c.classList.remove('active'));
-    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+<style>
+/* Modal + form styles — modern, responsive, cyan-500 accent */
+.modal{display:flex;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(2,6,23,0.52);justify-content:center;align-items:center;z-index:60;padding:20px;box-sizing:border-box}
+.modal-box{background:#fff;padding:24px;border-radius:12px;width:100%;max-width:640px;position:relative;box-shadow:0 10px 30px rgba(2,6,23,0.18);transition:transform .12s ease,opacity .12s ease}
+.modal-close{position:absolute;right:12px;top:8px;border:none;background:transparent;font-size:22px;cursor:pointer;color:#374151}
+.publish-btn{margin:12px 0;padding:10px 16px;background:#06b6d4;color:#fff;border:none;border-radius:10px;cursor:pointer;font-weight:600}
+.publish-btn:hover{background:#0891b2}
+.modal-box input,.modal-box textarea,.modal-box select{width:100%;padding:12px;border-radius:10px;border:1px solid #e5e7eb;font-size:14px;box-sizing:border-box;color:#0f172a}
+.modal-box textarea{min-height:140px;resize:vertical;padding-top:14px}
+.modal-box input:focus,.modal-box textarea:focus,.modal-box select:focus{outline:none;border-color:#06b6d4;box-shadow:0 0 0 6px rgba(6,182,212,0.10)}
 
-    document.getElementById(tabId).classList.add('active');
-    event.target.classList.add('active');
+/* Profile layout tweaks */
+.profile-stats{display:flex;flex-wrap:wrap;gap:18px;margin-top:12px}
+.profile-stats div{display:flex;flex-direction:column;align-items:flex-start}
+.profile-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px;margin-top:12px}
+.profile-card{background:#fff;border-radius:10px;overflow:hidden;box-shadow:0 6px 18px rgba(15,23,42,0.06);border:1px solid #e6eef0}
+.profile-card img{width:100%;height:160px;object-fit:cover}
+.profile-card-content{padding:12px}
+.card-links a{margin-right:8px;color:#0ea5a4;text-decoration:none;font-weight:600}
+
+/* Bio + edit button */
+.profile-bio{margin-top:8px;display:flex;align-items:center;gap:10px}
+.edit-btn{padding:8px 12px;border-radius:10px;border:1px solid #e6eef0;background:#fff;color:#0f172a;cursor:pointer}
+.edit-btn:hover{border-color:#06b6d4}
+
+@media (max-width:640px){
+    .modal-box{padding:16px;border-radius:10px}
+    .profile-card img{height:140px}
+    .profile-stats{gap:12px}
 }
+</style>
+
+<script>
+function showTab(event, tabId){
+    document.querySelectorAll('.profile-content').forEach(c => c.classList.remove('active'));
+    document.querySelectorAll('.profile-tab').forEach(t => t.classList.remove('active'));
+    document.getElementById(tabId).classList.add('active');
+    if(event && event.target) event.target.classList.add('active');
+}
+
+function openProjectModal(){ document.getElementById('projectModal').style.display='flex'; }
+function openPostModal(){ document.getElementById('postModal').style.display='flex'; }
+function openBioModal(){ document.getElementById('bioModal').style.display='flex'; }
+function closeModal(id){ document.getElementById(id).style.display='none'; }
+
+// Close modal when clicking outside modal-box
+document.addEventListener('click', function(e){
+    ['bioModal','projectModal','postModal'].forEach(id => {
+        const el = document.getElementById(id);
+        if(!el) return;
+        if(el.style.display==='flex' && e.target === el){ closeModal(id); }
+    });
+});
+
+// Post image preview handlers
+function handlePostImage(event){
+    const file = event.target.files && event.target.files[0];
+    const previewWrap = document.getElementById('postImagePreview');
+    const previewImg = document.getElementById('postPreviewImg');
+    const placeholder = document.getElementById('postImagePlaceholder');
+    if(!file){
+        previewWrap.style.display='none'; placeholder.style.display='block'; previewImg.src=''; return;
+    }
+    const url = URL.createObjectURL(file);
+    previewImg.src = url;
+    previewWrap.style.display='block'; placeholder.style.display='none';
+}
+
+function chooseImage(){ document.getElementById('postImageInput').click(); }
+function removePostImage(){
+    const input = document.getElementById('postImageInput');
+    const previewWrap = document.getElementById('postImagePreview');
+    const previewImg = document.getElementById('postPreviewImg');
+    const placeholder = document.getElementById('postImagePlaceholder');
+    input.value = '';
+    previewImg.src = '';
+    previewWrap.style.display='none'; placeholder.style.display='block';
+}
+
 </script>
-{%endblock%}
+
+{% endblock %}
