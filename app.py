@@ -134,6 +134,12 @@ def profile_data():
     })
 
 
+@app.route("/logout", methods=["POST"])
+@login_required
+def logout():
+    session.clear()
+    return jsonify({"success": True})
+
 @app.route("/login", methods=["POST", "GET"])
 def login():
     
