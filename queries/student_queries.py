@@ -76,7 +76,8 @@ def update_bio(user_id, bio_text):
         cur.close()
         conn.close()
         return True
-    except Exception:
+    except Exception as e:
+        print(e)
         try:
             cur.close()
             conn.close()

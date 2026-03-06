@@ -1,0 +1,257 @@
+{% extends 'base.html' %}
+
+{% block css %}
+<style>
+
+.page{
+max-width:650px;
+margin:auto;
+padding:40px 20px;
+font-family:system-ui;
+}
+
+.card{
+background:white;
+border:1px solid #eee;
+border-radius:12px;
+padding:30px;
+box-shadow:0 4px 20px rgba(0,0,0,0.04);
+}
+
+.card h2{
+margin-bottom:20px;
+}
+
+/* preview */
+
+.preview{
+width:100%;
+height:280px;
+border:2px dashed #ddd;
+border-radius:10px;
+display:flex;
+align-items:center;
+justify-content:center;
+margin-bottom:18px;
+overflow:hidden;
+background:#fafafa;
+cursor:pointer;
+}
+
+.preview span{
+color:#888;
+font-size:14px;
+}
+
+.preview img{
+width:100%;
+height:100%;
+object-fit:cover;
+display:none;
+}
+
+/* inputs */
+
+textarea{
+width:100%;
+min-height:90px;
+padding:12px;
+border-radius:8px;
+border:1px solid #ddd;
+resize:none;
+font-family:inherit;
+margin-bottom:20px;
+}
+
+/* button */
+
+.upload-btn{
+width:100%;
+padding:12px;
+border:none;
+background:#0095f6;
+color:white;
+border-radius:8px;
+font-size:15px;
+cursor:pointer;
+display:flex;
+align-items:center;
+justify-content:center;
+gap:10px;
+transition:.2s;
+}
+
+.upload-btn:hover{
+background:#007bd1;
+}
+
+.upload-btn:disabled{
+background:#aaa;
+cursor:not-allowed;
+}
+
+/* spinner */
+
+.spinner{
+width:18px;
+height:18px;
+border:2px solid rgba(255,255,255,0.4);
+border-top:2px solid white;
+border-radius:50%;
+animation:spin 1s linear infinite;
+display:none;
+}
+
+@keyframes spin{
+to{transform:rotate(360deg)}
+}
+
+/* progress bar */
+
+.upload-bar{
+position:fixed;
+bottom:0;
+left:0;
+height:4px;
+width:100%;
+background:#eee;
+display:none;
+}
+
+.upload-progress{
+height:100%;
+width:0%;
+background:#0095f6;
+transition:width .3s;
+}
+
+</style>
+{% endblock %}
+
+
+
+{% block content %}
+
+<div class="page">
+
+<div class="card">
+
+<h2>Create Post</h2>
+
+<div class="preview" onclick="image.click()">
+<img id="previewImg">
+<span id="previewText">Click to select image</span>
+</div>
+
+<input type="file" id="image" accept="image/*" hidden>
+
+<textarea id="caption" placeholder="Write a caption..."></textarea>
+
+<button id="uploadBtn" class="upload-btn" onclick="submitPost()">
+
+<div class="spinner" id="spinner"></div>
+<span id="btnText">Upload Post</span>
+
+</button>
+
+</div>
+
+</div>
+
+
+<div class="upload-bar" id="uploadBar">
+<div class="upload-progress" id="uploadProgress"></div>
+</div>
+
+{% endblock %}
+
+
+
+{% block js %}
+
+<script>
+
+const image = document.getElementById("image")
+const previewImg = document.getElementById("previewImg")
+const previewText = document.getElementById("previewText")
+
+const uploadBtn = document.getElementById("uploadBtn")
+const spinner = document.getElementById("spinner")
+
+const bar = document.getElementById("uploadBar")
+const progress = document.getElementById("uploadProgress")
+
+image.onchange = e => {
+
+const file = e.target.files[0]
+
+if(!file) return
+
+previewImg.src = URL.createObjectURL(file)
+
+previewImg.style.display = "block"
+
+previewText.style.display = "none"
+
+}
+
+
+async function submitPost(){
+
+const file = image.files[0]
+
+if(!file){
+alert("Please select an image")
+return
+}
+
+uploadBtn.disabled = true
+spinner.style.display = "block"
+
+bar.style.display = "block"
+
+let percent = 0
+
+const fakeProgress = setInterval(()=>{
+percent += 10
+progress.style.width = percent + "%"
+if(percent >= 90) clearInterval(fakeProgress)
+},200)
+
+const caption = document.getElementById("caption").value
+
+const fd = new FormData()
+
+fd.append("image",file)
+fd.append("caption",caption)
+
+try{
+
+const res = await fetch("/create-post",{
+method:"POST",
+body:fd
+})
+
+progress.style.width = "100%"
+
+setTimeout(()=>{
+window.location="/profile"
+},500)
+
+}catch(err){
+
+alert("Upload failed")
+
+uploadBtn.disabled = false
+spinner.style.display = "none"
+
+bar.style.display="none"
+progress.style.width="0%"
+
+}
+
+}
+
+</script>
+
+{% endblock %}

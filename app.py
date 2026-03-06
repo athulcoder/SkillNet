@@ -5,7 +5,7 @@ import uuid
 from werkzeug.utils import secure_filename
 import cloudinary_config
 from queries.student_queries import create_student, check_student, get_user_by_id, update_bio, get_followers_count, get_following_count
-from queries.post_queries import create_post, get_posts_by_user, count_posts_by_user
+from queries.post_queries import create_post, get_posts_by_user, count_posts_by_user,get_feed_posts
 from queries.project_queries import create_project, get_projects_by_user, count_projects_by_user
 import cloudinary
 import cloudinary.uploader
@@ -60,37 +60,79 @@ def searchPage():
     return make_response(render_template('/search.html', active_page="search")),200
 
 
-
-
-@app.route("/profile", methods=["POST", "GET"])
+@app.route("/profile")
 @login_required
-def ProfilePage():
-    try:
-        user = session.get('user')
-        user_id = user.get('id') if user else None
+def profile():
+    return render_template("profile.html")
 
-        post_count = count_posts_by_user(user_id)
-        project_count = count_projects_by_user(user_id)
-        followers_count = get_followers_count(user_id)
-        following_count = get_following_count(user_id)
 
-        posts = get_posts_by_user(user_id)
-        projects = get_projects_by_user(user_id)
+@app.route("/profile/edit", methods=["GET","POST"])
+@login_required
+def edit_profile():
 
-        return make_response(
-            render_template(
-                'profile.html',
-                active_page='profile',
-                post_count=post_count,
-                project_count=project_count,
-                followers_count=followers_count,
-                following_count=following_count,
-                posts=posts,
-                projects=projects,
-            )
-        ), 200
-    except Exception as e:
-        return make_response(render_template('profile.html', active_page='profile', error='Could not load profile')), 500
+    user = session.get("user")
+
+    if request.method == "POST":
+
+        bio = request.form.get("bio")
+
+        update_bio(user["student_id"], bio)
+
+
+        return redirect(url_for("profile"))
+
+    return render_template("profile_edit.html")
+
+
+@app.route("/post/create")
+@login_required
+def create_post_page():
+    return render_template("add_post.html")
+
+
+@app.route("/project/create")
+@login_required
+def create_project_page():
+    return render_template("add_project.html")
+
+@app.route("/api/profile-data")
+@login_required
+def profile_data():
+    user_id = session['user'].get('student_id')
+    row = get_user_by_id(user_id=user_id)
+    myuser = {
+    "student_id": row[0],
+    "fullname": row[1],
+    "username": row[2],
+    "email": row[3],
+    "password": row[4],
+    "profile_url": row[5],
+    "bio": row[6],
+    "college": row[7],
+    "location": row[8],
+    "skills": row[9],
+    "created_at": row[10]
+}
+    print(myuser)
+    
+    post_count = count_posts_by_user(user_id)
+    project_count = count_projects_by_user(user_id)
+    followers_count = get_followers_count(user_id)
+    following_count = get_following_count(user_id)
+
+    posts = get_posts_by_user(user_id)
+    projects = get_projects_by_user(user_id)
+
+    return jsonify({
+        "user":myuser,
+        "post_count": post_count,
+        "project_count": project_count,
+        "followers_count": followers_count,
+        "following_count": following_count,
+        "posts": posts,
+        "projects": projects
+    })
+
 
 @app.route("/login", methods=["POST", "GET"])
 def login():
@@ -110,7 +152,7 @@ def login():
             return render_template("login.html", error="Invalid credentials entered")
 
         session['user'] = {
-            'id': user[0],
+            'student_id': user[0],
             'fullname': user[1],
             'username': user[2],
             'email': user[3],
@@ -144,7 +186,7 @@ def signup():
 
         # result is the created user row
         session["user"] = {
-            'id': result[0],
+            'student_id': result[0],
             'fullname': result[1],
             'username': result[2],
             'email': result[3],
@@ -161,73 +203,70 @@ def signup():
 def create_post_route():
     try:
         user = session.get('user')
-        user_id = user.get('id')
+        user_id = user.get('student_id')
 
         if 'image' not in request.files:
-            return render_template('profile.html',
-                                   active_page='profile',
-                                   error='No image provided'), 400
+            return jsonify({"success": False, "error": "No image provided"}), 400
 
         file = request.files['image']
 
-        if file and allowed_file(file.filename):
+        if not file or not allowed_file(file.filename):
+            return jsonify({"success": False, "error": "Invalid image"}), 400
 
-            upload_result = cloudinary.uploader.upload(file)
+        upload_result = cloudinary.uploader.upload(file)
 
-            image_url = upload_result["secure_url"]
+        image_url = upload_result["secure_url"]
 
-        else:
-            return render_template('profile.html',
-                                   active_page='profile',
-                                   error='Invalid image'), 400
-
-        caption = request.form.get('caption') or ''
+        caption = request.form.get('caption', '')
 
         post = create_post(user_id, caption, image_url)
 
         if not post:
-            return render_template('profile.html',
-                                   active_page='profile',
-                                   error='Could not create post'), 500
+            return jsonify({"success": False, "error": "Post creation failed"}), 500
 
-        return redirect(url_for('ProfilePage'))
+        return jsonify({"success": True, "image_url": image_url})
 
     except Exception as e:
         print(e)
-        return render_template('profile.html',
-                               active_page='profile',
-                               error='Internal server error'), 500
+        return jsonify({"success": False, "error": "Internal server error"}), 500
+    
 
 @app.route('/publish-project', methods=['POST'])
 @login_required
 def publish_project_route():
     try:
         user = session.get('user')
-        user_id = user.get('id')
-        title = request.form.get('title')
-        description = request.form.get('description')
-        github_url = request.form.get('github_url') or None
-        demo_url = request.form.get('demo_url') or None
-        visibility = request.form.get('visibility') or 'Public'
+        user_id = user.get('student_id')
+
+        data = request.get_json()
+
+        title = data.get('title')
+        description = data.get('description')
+        github_url = data.get('github_url')
+        demo_url = data.get('demo_url')
+        visibility = data.get('visibility', 'Public')
 
         if not title:
-            return render_template('profile.html', active_page='profile', error='Title required'), 400
+            return jsonify({"success": False, "error": "Title required"}), 400
 
         project = create_project(user_id, title, description, github_url, demo_url, visibility)
+
         if not project:
-            return render_template('profile.html', active_page='profile', error='Could not create project'), 500
+            return jsonify({"success": False, "error": "Project creation failed"}), 500
 
-        return redirect(url_for('ProfilePage'))
-    except Exception:
-        return render_template('profile.html', active_page='profile', error='Internal server error'), 500
+        return jsonify({"success": True})
 
+    except Exception as e:
+        print(e)
+        return jsonify({"success": False, "error": "Internal server error"}), 500
+    
 
 @app.route('/edit-bio', methods=['POST'])
 @login_required
 def edit_bio_route():
     try:
         user = session.get('user')
-        user_id = user.get('id')
+        user_id = user.get('student_id')
         bio_text = request.form.get('bio') or ''
         ok = update_bio(user_id, bio_text)
         if not ok:
@@ -240,6 +279,22 @@ def edit_bio_route():
         return render_template('profile.html', active_page='profile', error='Internal server error'), 500
 
 
+
+
+
+@app.route("/api/feed")
+@login_required
+def api_feed():
+
+    posts = get_feed_posts()
+    print(posts )
+    return jsonify({
+        "posts": posts
+    })
+
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=8000)
+
+
+
 

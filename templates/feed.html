@@ -1,66 +1,103 @@
-
-
-
 {% extends 'base.html' %}
 
-{% block content%}
-<div class="feed">
+{% block content %}
 
-    <!-- POST 1 -->
-    <div class="post">
-        <div class="post-header">
-            <div class="user">
-                <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQkAJEkJQ1WumU0hXNpXdgBt9NUKc0QDVIiaw&s">
-                <div>
-                    <h4>Anand Krishnan</h4>
-                    <span>Frontend Developer</span>
-                </div>
-            </div>
-            <a href="profile.html" class="view-profile">View Profile</a>
-        </div>
+<div class="feed" id="feedContainer">
 
-        <img src="https://i.ytimg.com/vi/SFjN8INg8xI/maxresdefault.jpg" class="project-img">
-
-        <p class="description">
-            🚀 Built a responsive portfolio website using HTML, CSS, and JavaScript.
-            Includes smooth animations and mobile-first design.
-        </p>
-
-        <div class="actions">
-            <button onclick="likePost(this)">❤️ Like</button>
-            <button onclick="sharePost()">🔗 Share</button>
-        </div>
-    </div>
-
-    <!-- POST 2 -->
-    <div class="post">
-        <div class="post-header">
-            <div class="user">
-                <img src="https://meche.mit.edu/sites/default/files/ATHack%202018%201024.JPG">
-                <div>
-                    <h4>Neha Suresh</h4>
-                    <span>UI/UX Designer</span>
-                </div>
-            </div>
-            <a href="profile.html" class="view-profile">View Profile</a>
-        </div>
-
-        <img src="https://algocademy.com/blog/wp-content/uploads/2024/09/75e30563thumbnail.jpeg" class="project-img">
-
-        <p class="description">
-            🎨 Designed a modern mobile app interface using Figma.
-            Focused on usability, accessibility, and minimal UI.
-        </p>
-
-        <div class="actions">
-            <button onclick="likePost(this)">❤️ Like</button>
-            <button onclick="sharePost()">🔗 Share</button>
-        </div>
-    </div>
+<div class="loading">Loading posts...</div>
 
 </div>
-{%endblock%}
-{% block js %}
-<script src="{{ url_for('static', filename='js/feed.js') }}"></script>
+
 {% endblock %}
 
+
+{% block js %}
+
+<script>
+
+async function loadFeed(){
+
+const res = await fetch("/api/feed")
+
+const data = await res.json()
+
+const container = document.getElementById("feedContainer")
+
+container.innerHTML = ""
+
+data.posts.forEach(post=>{
+
+container.innerHTML += `
+    
+<div class="post">
+
+<div class="post-header">
+
+<div class="user">
+
+<img src="${post.profile_pic || '/static/images/user.png'}">
+
+<div>
+<h4>${post.full_name}</h4>
+<span>@${post.username}</span>
+</div>
+
+</div>
+
+<a href="/profile/${post.student_id}" class="view-profile">
+View Profile
+</a>
+
+</div>
+
+
+<img src="${post.image_url}" class="project-img">
+
+
+<p class="description">
+${post.caption || ""}
+</p>
+
+
+<div class="actions">
+
+<button onclick="likePost(this)">❤️ Like</button>
+
+<button onclick="sharePost('${post.image_url}')">🔗 Share</button>
+
+</div>
+
+</div>
+
+`
+
+})
+
+}
+
+
+
+function likePost(btn){
+
+btn.classList.toggle("liked")
+
+btn.innerText = btn.classList.contains("liked") ? 
+"❤️ Liked" : "❤️ Like"
+
+}
+
+
+function sharePost(url){
+
+navigator.clipboard.writeText(url)
+
+alert("Post link copied!")
+
+}
+
+
+loadFeed()
+
+</script>
+
+{% endblock %}

@@ -1,0 +1,85 @@
+{% extends 'base.html' %}
+
+{% block css %}
+<style>
+
+.container{
+max-width:650px;
+margin:auto;
+padding:40px;
+}
+
+.card{
+border:1px solid #eee;
+padding:30px;
+border-radius:10px;
+}
+
+input,textarea{
+width:100%;
+padding:10px;
+margin-bottom:15px;
+border-radius:6px;
+border:1px solid #ddd;
+}
+
+button{
+padding:10px 16px;
+border:none;
+background:#111;
+color:white;
+border-radius:6px;
+cursor:pointer;
+}
+
+</style>
+{% endblock %}
+
+{% block content %}
+
+<div class="container">
+
+<div class="card">
+
+<h2>Publish Project</h2>
+
+<input id="title" placeholder="Project title">
+
+<textarea id="description" placeholder="Description"></textarea>
+
+<input id="github_url" placeholder="Github URL">
+
+<input id="demo_url" placeholder="Demo URL">
+
+<button onclick="submitProject()">Publish</button>
+
+</div>
+
+</div>
+
+{% endblock %}
+
+{% block js %}
+<script>
+
+async function submitProject(){
+
+const data={
+title:title.value,
+description:description.value,
+github_url:github_url.value,
+demo_url:demo_url.value
+}
+
+await fetch("/publish-project",{
+method:"POST",
+headers:{"Content-Type":"application/json"},
+body:JSON.stringify(data)
+})
+
+window.location="/profile"
+
+}
+
+</script>
+{% endblock %}

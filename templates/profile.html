@@ -1,48 +1,269 @@
 {% extends 'base.html' %}
 
+{% block css %}
+<style>
+
+.profile-page{
+max-width:950px;
+margin:auto;
+padding:30px;
+font-family:system-ui;
+}
+
+/* HEADER */
+
+.profile-header{
+display:flex;
+gap:40px;
+align-items:center;
+margin-bottom:40px;
+}
+
+.profile-avatar img{
+width:140px;
+height:140px;
+border-radius:50%;
+object-fit:cover;
+border:4px solid #f1f1f1;
+}
+
+.profile-info{
+flex:1;
+}
+
+.profile-top{
+display:flex;
+justify-content:space-between;
+align-items:center;
+margin-bottom:10px;
+}
+
+.username{
+color:#777;
+font-size:14px;
+}
+
+/* ACTION BUTTONS */
+
+.profile-actions{
+display:flex;
+gap:10px;
+}
+
+.action-btn{
+padding:8px 14px;
+border-radius:8px;
+border:none;
+background:#111;
+color:white;
+cursor:pointer;
+font-size:14px;
+transition:.2s;
+}
+
+.action-btn:hover{
+background:#333;
+}
+
+.edit-btn{
+background:#eee;
+color:#333;
+padding:6px 10px;
+border-radius:6px;
+cursor:pointer;
+margin-left:10px;
+}
+
+/* BIO */
+
+.profile-bio{
+margin-top:8px;
+}
+
+.profile-bio strong{
+font-size:18px;
+}
+
+.profile-bio p{
+margin:4px 0;
+color:#555;
+}
+
+/* SKILLS */
+
+.skills{
+display:flex;
+flex-wrap:wrap;
+gap:8px;
+margin-top:10px;
+}
+
+.skill-pill{
+background:#f2f2f2;
+padding:6px 12px;
+border-radius:20px;
+font-size:12px;
+}
+
+/* STATS */
+
+.profile-stats{
+display:flex;
+gap:25px;
+margin-top:12px;
+}
+
+.profile-stats strong{
+font-size:18px;
+}
+
+/* TABS */
+
+.profile-tabs{
+display:flex;
+justify-content:center;
+gap:40px;
+border-top:1px solid #ddd;
+margin-top:30px;
+}
+
+.tab{
+padding:15px;
+cursor:pointer;
+color:#888;
+}
+
+.tab.active{
+color:black;
+border-top:2px solid black;
+}
+
+/* GRID */
+
+.grid{
+display:grid;
+grid-template-columns:repeat(auto-fill,minmax(250px,1fr));
+gap:12px;
+margin-top:20px;
+}
+
+.post-card{
+position:relative;
+overflow:hidden;
+border-radius:8px;
+}
+
+.post-card img{
+width:100%;
+height:250px;
+object-fit:cover;
+transition:.3s;
+}
+
+.post-card:hover img{
+transform:scale(1.05);
+}
+
+/* PROJECT CARD */
+
+.project-card{
+border:1px solid #eee;
+padding:15px;
+border-radius:8px;
+background:white;
+}
+
+.project-links{
+margin-top:8px;
+display:flex;
+gap:10px;
+}
+
+.loading{
+text-align:center;
+color:#888;
+padding:40px;
+}
+
+</style>
+{% endblock %}
+
+
+
 {% block content %}
 
-<div class="profile-container">
-
-<!-- HEADER -->
+<div class="profile-page">
 
 <div class="profile-header">
 
-<img src="https://via.placeholder.com/150" class="profile-pic">
+<div class="profile-avatar">
+<img id="profileAvatar" src="">
+</div>
 
 <div class="profile-info">
 
-<h2>{{ session.user.fullname }}</h2>
-<p class="username">@{{ session.user.username }}</p>
+<div class="profile-top">
 
-{% if session.user.bio %}
-<p class="bio">{{session.user.bio}}</p>
-{% endif %}
+<div>
 
-<button onclick="openBioModal()" class="edit-btn">
-Edit Bio
-</button>
+<strong id="fullname"></strong>
+
+<div class="username">
+
+@<span id="username"></span>
+
+<a href="/profile/edit" class="edit-btn">
+✏ Edit
+</a>
+
+</div>
+
+</div>
+
+<div class="profile-actions">
+
+<a href="/post/create">
+<button class="action-btn">+ Post</button>
+</a>
+
+<a href="/project/create">
+<button class="action-btn">+ Project</button>
+</a>
+
+</div>
+
+</div>
+
+<div class="profile-bio">
+
+<p id="bioText"></p>
+
+<p id="collegeText" class="username"></p>
+
+</div>
+
+<div id="skills" class="skills"></div>
 
 <div class="profile-stats">
 
 <div>
-<strong>{{post_count or 0}}</strong>
-<span>Posts</span>
+<strong id="postCount">0</strong>
+Posts
 </div>
 
 <div>
-<strong>{{project_count or 0}}</strong>
-<span>Projects</span>
+<strong id="followersCount">0</strong>
+Followers
 </div>
 
 <div>
-<strong>{{followers_count or 0}}</strong>
-<span>Followers</span>
+<strong id="followingCount">0</strong>
+Following
 </div>
 
 <div>
-<strong>{{following_count or 0}}</strong>
-<span>Following</span>
+<strong id="projectCount">0</strong>
+Projects
 </div>
 
 </div>
@@ -52,266 +273,170 @@ Edit Bio
 </div>
 
 
-<!-- TABS -->
 
 <div class="profile-tabs">
 
-<div class="profile-tab active"
-onclick="showTab(event,'projects')">
-
-Projects
-
-</div>
-
-<div class="profile-tab"
-onclick="showTab(event,'posts')">
-
+<div class="tab active" onclick="showTab(event,'posts')">
 Posts
-
 </div>
 
-</div>
-
-
-<!-- PROJECTS -->
-
-<div id="projects" class="profile-content active">
-
-<button onclick="openProjectModal()"
-class="primary-btn">
-
-Publish Project
-
-</button>
-
-<div class="profile-grid">
-
-{% for project in projects %}
-
-<div class="profile-card">
-
-<div class="profile-card-content">
-
-<h4>{{project.title}}</h4>
-<p>{{project.description}}</p>
-
-<div class="card-links">
-
-{% if project.github_url %}
-<a href="{{project.github_url}}">Github</a>
-{% endif %}
-
-{% if project.demo_url %}
-<a href="{{project.demo_url}}">Demo</a>
-{% endif %}
-
-</div>
-
-</div>
-
-</div>
-
-{% endfor %}
-
+<div class="tab" onclick="showTab(event,'projects')">
+Projects
 </div>
 
 </div>
 
 
 
-<!-- POSTS -->
-
-<div id="posts" class="profile-content">
-
-<button onclick="openPostModal()"
-class="primary-btn">
-
-Create Post
-
-</button>
-
-<div class="profile-grid">
-
-{% for post in posts %}
-
-<div class="profile-card">
-
-<img src="{{post.image_url}}">
-
-<div class="profile-card-content">
-
-<p>{{post.caption}}</p>
-
+<div id="posts">
+<div class="grid" id="postsGrid">
+<div class="loading">Loading posts...</div>
 </div>
-
-</div>
-
-{% endfor %}
-
-</div>
-
-</div>
-
-
 </div>
 
 
 
-<!-- POST MODAL -->
-
-<div id="postModal" class="modal">
-
-<div class="modal-box">
-
-<div class="modal-header">
-
-<h3>Create Post</h3>
-
-<button onclick="closeModal('postModal')"
-class="close-btn">&times;</button>
-
+<div id="projects" style="display:none">
+<div class="grid" id="projectsGrid">
+<div class="loading">Loading projects...</div>
 </div>
-
-
-<div class="upload-preview" id="previewContainer">
-
-<img id="previewImg">
-
-<span id="placeholderText">
-Select an image
-</span>
-
-</div>
-
-
-<input type="file"
-id="postImageInput"
-accept="image/*">
-
-
-<textarea id="captionInput"
-placeholder="Write caption..."></textarea>
-
-
-<button onclick="submitPost()"
-class="primary-btn">
-
-Publish Post
-
-</button>
-
 </div>
 
 </div>
 
 {% endblock %}
 
+
+
 {% block js %}
+
 <script>
 
-function showTab(event,tabId){
+async function loadProfileData(){
 
-document.querySelectorAll('.profile-content')
-.forEach(t=>t.classList.remove('active'))
+const res = await fetch("/api/profile-data")
+const data = await res.json()
 
-document.querySelectorAll('.profile-tab')
-.forEach(t=>t.classList.remove('active'))
+const user = data.user
 
-document.getElementById(tabId)
-.classList.add('active')
+/* USER INFO */
 
-event.target.classList.add('active')
+document.getElementById("fullname").innerText = user.fullname
+document.getElementById("username").innerText = user.username
+document.getElementById("bioText").innerText = user.bio || "No bio yet"
+document.getElementById("collegeText").innerText = user.college || ""
 
+const avatar = document.getElementById("profileAvatar")
+
+avatar.src = user.profile_url || "/static/images/user.png"
+
+avatar.onerror = () => {
+avatar.src = "/static/images/user.png"
 }
 
+/* SKILLS */
 
+const skillsContainer = document.getElementById("skills")
+skillsContainer.innerHTML = ""
 
-function openPostModal(){
-document.getElementById("postModal").style.display="flex"
-}
-
-function closeModal(id){
-document.getElementById(id).style.display="none"
-}
-
-
-
-document.getElementById("postImageInput")
-.addEventListener("change",(e)=>{
-
-const file=e.target.files[0]
-
-const img=document.getElementById("previewImg")
-const text=document.getElementById("placeholderText")
-
-if(file){
-
-img.src=URL.createObjectURL(file)
-
-img.style.display="block"
-
-text.style.display="none"
-
-}
-
+if(user.skills){
+user.skills.split(",").forEach(skill=>{
+skillsContainer.innerHTML += `<div class="skill-pill">${skill}</div>`
 })
+}
+
+/* STATS */
+
+postCount.innerText = data.post_count
+projectCount.innerText = data.project_count
+followersCount.innerText = data.followers_count
+followingCount.innerText = data.following_count
+
+/* POSTS + PROJECTS */
+
+renderPosts(data.posts)
+renderProjects(data.projects)
+
+}
 
 
 
-async function submitPost(){
+function renderPosts(posts){
+console.log(posts)
+const grid = document.getElementById("postsGrid")
 
-const file=document
-.getElementById("postImageInput")
-.files[0]
+grid.innerHTML = ""
 
-const caption=document
-.getElementById("captionInput")
-.value
-
-if(!file){
-
-alert("Select image")
-
+if(posts.length === 0){
+grid.innerHTML = "<div class='loading'>No posts yet</div>"
 return
-
 }
 
-const formData=new FormData()
+posts.forEach(p=>{
 
-formData.append("image",file)
-
-formData.append("caption",caption)
-
-
-try{
-
-const res=await fetch("/create-post",{
-
-method:"POST",
-
-body:formData
+grid.innerHTML += `
+<div class="post-card">
+<img src="${p.image_url}" loading="lazy">
+</div>
+`
 
 })
 
-const data=await res.json()
+}
 
-if(data.success){
 
-location.reload()
 
-}else{
+function renderProjects(projects){
 
-alert("Upload failed")
+const grid = document.getElementById("projectsGrid")
+
+grid.innerHTML = ""
+
+if(projects.length === 0){
+grid.innerHTML = "<div class='loading'>No projects yet</div>"
+return
+}
+
+projects.forEach(p=>{
+
+grid.innerHTML += `
+<div class="project-card">
+
+<h4>${p.title}</h4>
+
+<p>${p.description || ""}</p>
+
+<div class="project-links">
+
+${p.github_url ? `<a href="${p.github_url}" target="_blank">Github</a>` : ""}
+
+${p.demo_url ? `<a href="${p.demo_url}" target="_blank">Demo</a>` : ""}
+
+</div>
+
+</div>
+`
+
+})
 
 }
 
-}catch(err){
 
-console.log(err)
+
+function showTab(e,id){
+
+document.querySelectorAll(".tab")
+.forEach(t=>t.classList.remove("active"))
+
+e.target.classList.add("active")
+
+posts.style.display = id==="posts" ? "block":"none"
+projects.style.display = id==="projects" ? "block":"none"
 
 }
 
-}
+
+loadProfileData()
 
 </script>
 
