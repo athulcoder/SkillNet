@@ -221,3 +221,67 @@ def get_following_count(user_id):
         return cnt
     except Exception:
         return 0
+    
+
+
+    
+def toggle_follow(follower_id, following_id):
+
+    try:
+        conn = get_connection()
+        cur = conn.cursor()
+
+        # check if already following
+        cur.execute("""
+        SELECT 1 FROM UserFollows
+        WHERE follower_id=%s AND following_id=%s
+        """,(follower_id,following_id))
+
+        exists = cur.fetchone()
+
+        if exists:
+            # unfollow
+            cur.execute("""
+            DELETE FROM UserFollows
+            WHERE follower_id=%s AND following_id=%s
+            """,(follower_id,following_id))
+
+            conn.commit()
+            cur.close()
+            conn.close()
+
+            return {"following":False}
+
+        else:
+            # follow
+            cur.execute("""
+            INSERT INTO UserFollows (follower_id,following_id)
+            VALUES (%s,%s)
+            """,(follower_id,following_id))
+
+            conn.commit()
+            cur.close()
+            conn.close()
+
+            return {"following":True}
+
+    except Exception as e:
+        print(e)
+        return None
+    
+def is_following(follower_id, following_id):
+
+    conn = get_connection()
+    cur = conn.cursor()
+
+    cur.execute("""
+    SELECT 1 FROM UserFollows
+    WHERE follower_id=%s AND following_id=%s
+    """,(follower_id,following_id))
+
+    result = cur.fetchone()
+
+    cur.close()
+    conn.close()
+
+    return result is not None

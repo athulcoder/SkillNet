@@ -389,14 +389,28 @@ followingCount.innerText = data.stats.following
 /* SELF PROFILE CHECK */
 
 if(data.is_self){
+
 editBtn.style.display = "inline-block"
 cpost.style.display="inline-block"
 cproj.style.display="inline-block"
 
 }else{
+
 followBtn.style.display = "inline-block"
+
+if(data.following){
+followBtn.innerText="Following"
+followBtn.style.background="#e5e7eb"
+followBtn.style.color="#111"
+}else{
+followBtn.innerText="Follow"
+followBtn.style.background="#2563eb"
+followBtn.style.color="white"
 }
 
+followBtn.onclick = () => toggleFollow(data.user.student_id)
+
+}
 
 /* POSTS + PROJECTS */
 
@@ -499,7 +513,40 @@ projects.style.display = id==="projects" ? "block":"none"
 
 }
 
+async function toggleFollow(userId){
 
+const res = await fetch("/api/follow",{
+method:"POST",
+headers:{
+"Content-Type":"application/json"
+},
+body:JSON.stringify({
+user_id:userId
+})
+})
+
+const data = await res.json()
+
+if(data.following){
+
+followBtn.innerText="Following"
+followBtn.style.background="#e5e7eb"
+followBtn.style.color="#111"
+
+followersCount.innerText =
+parseInt(followersCount.innerText)+1
+
+}else{
+
+followBtn.innerText="Follow"
+followBtn.style.background="#2563eb"
+followBtn.style.color="white"
+
+followersCount.innerText =
+parseInt(followersCount.innerText)-1
+
+}
+}
 loadProfileData()
 
 </script>

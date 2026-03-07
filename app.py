@@ -5,7 +5,7 @@ import uuid
 from werkzeug.utils import secure_filename
 import cloudinary_config
 from queries.profile_queries import update_profile,update_user_skills,get_all_skills,get_user_profile,get_user_skills
-from queries.student_queries import create_student, check_student, get_user_profile_data, update_bio, get_followers_count, get_following_count,get_user_id_by_username
+from queries.student_queries import create_student, check_student, get_user_profile_data, update_bio, is_following,toggle_follow,get_user_id_by_username
 from queries.post_queries import create_post, count_posts_by_user,get_feed_posts,toggle_post_like
 from queries.project_queries import create_project, get_projects_by_user, count_projects_by_user
 from queries.search_queries import search_students
@@ -87,10 +87,14 @@ def profile_data():
     viewer_id = session["user"]["student_id"]
 
 
-    
+
     username = request.args.get("username")
     # getting the user_id 
     user_id = get_user_id_by_username(username)
+    following_state = False
+
+    if viewer_id != user_id[0]:
+        following_state = is_following(viewer_id, user_id[0])
     print()
     # if username provided → fetch that profile
     if username:
@@ -173,7 +177,8 @@ def profile_data():
         "projects": projects_json,
         "posts": posts_json,
 
-        "is_self": viewer_id == user[0]
+        "is_self": viewer_id == user[0],
+        "following": following_state
 
     })
 
@@ -246,7 +251,24 @@ def signup():
     
     return make_response(render_template('signup.html'))
 
+@app.route("/api/follow", methods=["POST"])
+@login_required
+def follow_user():
 
+    viewer_id = session["user"]["student_id"]
+
+    data = request.get_json()
+    target_id = data.get("user_id")
+
+    if viewer_id == target_id:
+        return jsonify({"error":"Cannot follow yourself"}),400
+
+    result = toggle_follow(viewer_id,target_id)
+
+    if not result:
+        return jsonify({"error":"database error"}),500
+
+    return jsonify(result)
 @app.route('/create-post', methods=['POST'])
 @login_required
 def create_post_route():
