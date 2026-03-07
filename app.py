@@ -166,7 +166,7 @@ def login():
             'bio': user[6] if len(user) > 6 else None,
         }
 
-        return redirect(url_for("feedPage"))
+        return render_template(("feed.html"))
     
     return make_response(render_template('/login.html'))
 
@@ -197,11 +197,11 @@ def signup():
             'username': result[2],
             'email': result[3],
         }
-        return redirect(url_for("feedPage")), 200
+        return render_template(("feed.html"))
         
         
     
-    return make_response(render_template('/signup.html'))
+    return make_response(render_template('signup.html'))
 
 
 @app.route('/create-post', methods=['POST'])
