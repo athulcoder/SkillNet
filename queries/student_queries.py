@@ -54,11 +54,11 @@ def check_student(email ,password):
         return None
 
 
-def get_user_by_id(user_id):
+def get_user_id_by_username(username):
     try:
         conn = get_connection()
         cur = conn.cursor()
-        cur.execute("SELECT * FROM Student WHERE student_id=%s", (user_id,))
+        cur.execute("SELECT student_id FROM Student WHERE username=%s", (username,))
         user = cur.fetchone()
         cur.close()
         conn.close()
@@ -66,6 +66,117 @@ def get_user_by_id(user_id):
     except Exception:
         return None
 
+
+
+def get_user_profile_data(user_id):
+
+    try:
+        conn = get_connection()
+        cur = conn.cursor()
+
+        # user info
+        cur.execute("""
+        SELECT
+            student_id,
+            full_name,
+            username,
+            email,
+            profile_pic,
+            bio,
+            dob,
+            institution,
+            location
+        FROM Student
+        WHERE student_id = %s
+        """,(user_id,))
+
+        user = cur.fetchone()
+
+        if not user:
+            return None
+
+
+        # skills
+        cur.execute("""
+        SELECT s.skill_id, s.skill_name, s.skill_category
+        FROM Skill s
+        JOIN UserSkill us
+        ON s.skill_id = us.skill_id
+        WHERE us.user_id = %s
+        """,(user_id,))
+
+        skills = cur.fetchall()
+
+
+        # projects
+        cur.execute("""
+        SELECT
+            project_id,
+            title,
+            description,
+            github_url,
+            demo_url,
+            visibility,
+            created_at
+        FROM Project
+        WHERE user_id = %s
+        ORDER BY created_at DESC
+        """,(user_id,))
+
+        projects = cur.fetchall()
+
+
+        # posts
+        cur.execute("""
+        SELECT
+            post_id,
+            caption,
+            image_url,
+            location,
+            published_at
+        FROM Post
+        WHERE user_id = %s
+        ORDER BY published_at DESC
+        """,(user_id,))
+
+        posts = cur.fetchall()
+
+
+        # followers
+        cur.execute("""
+        SELECT COUNT(*)
+        FROM UserFollows
+        WHERE following_id = %s
+        """,(user_id,))
+
+        followers = cur.fetchone()[0]
+
+
+        # following
+        cur.execute("""
+        SELECT COUNT(*)
+        FROM UserFollows
+        WHERE follower_id = %s
+        """,(user_id,))
+
+        following = cur.fetchone()[0]
+
+
+        cur.close()
+        conn.close()
+
+        return {
+            "user": user,
+            "skills": skills,
+            "projects": projects,
+            "posts": posts,
+            "followers": followers,
+            "following": following
+        }
+
+    except Exception as e:
+        print(e)
+        return None
 
 def update_bio(user_id, bio_text):
     try:

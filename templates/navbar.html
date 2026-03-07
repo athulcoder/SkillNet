@@ -20,7 +20,7 @@
         onerror="this.onerror=null; this.src=`{{ url_for('static', filename='images/user.png') }}`"
         >
 
-        <a href="/profile" class="profile-link {% if active_page == 'profile' %} active {%endif%}">Profile</a>
+        <a href="/profile/{{session.user.username}}" class="profile-link {% if active_page == 'profile' %} active {%endif%}">Profile</a>
 
         <button class="logout-btn" onclick="logoutUser()">Logout</button>
 

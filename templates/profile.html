@@ -4,7 +4,7 @@
 <style>
 
 .profile-page{
-max-width:950px;
+max-width:1000px;
 margin:auto;
 padding:30px;
 font-family:system-ui;
@@ -14,28 +14,29 @@ font-family:system-ui;
 
 .profile-header{
 display:flex;
-gap:40px;
-align-items:center;
-margin-bottom:40px;
+justify-content:space-between;
+align-items:flex-start;
+gap:30px;
+margin-bottom:35px;
+}
+
+/* LEFT SIDE */
+
+.profile-left{
+display:flex;
+gap:25px;
 }
 
 .profile-avatar img{
-width:140px;
-height:140px;
+width:120px;
+height:120px;
 border-radius:50%;
 object-fit:cover;
 border:4px solid #f1f1f1;
 }
 
-.profile-info{
-flex:1;
-}
-
-.profile-top{
-display:flex;
-justify-content:space-between;
-align-items:center;
-margin-bottom:10px;
+.profile-main strong{
+font-size:22px;
 }
 
 .username{
@@ -43,50 +44,16 @@ color:#777;
 font-size:14px;
 }
 
-/* ACTION BUTTONS */
-
-.profile-actions{
-display:flex;
-gap:10px;
-}
-
-.action-btn{
-padding:8px 14px;
-border-radius:8px;
-border:none;
-background:#111;
-color:white;
-cursor:pointer;
+.profile-meta{
+color:#666;
 font-size:14px;
-transition:.2s;
+margin-top:4px;
 }
-
-.action-btn:hover{
-background:#333;
-}
-
-.edit-btn{
-background:#eee;
-color:#333;
-padding:6px 10px;
-border-radius:6px;
-cursor:pointer;
-margin-left:10px;
-}
-
-/* BIO */
 
 .profile-bio{
-margin-top:8px;
-}
-
-.profile-bio strong{
-font-size:18px;
-}
-
-.profile-bio p{
-margin:4px 0;
-color:#555;
+margin-top:10px;
+color:#444;
+max-width:500px;
 }
 
 /* SKILLS */
@@ -95,26 +62,78 @@ color:#555;
 display:flex;
 flex-wrap:wrap;
 gap:8px;
-margin-top:10px;
+margin-top:12px;
 }
 
 .skill-pill{
-background:#f2f2f2;
-padding:6px 12px;
-border-radius:20px;
+background:#eef2ff;
+border:1px solid #c7d2fe;
+padding:5px 10px;
+border-radius:16px;
 font-size:12px;
 }
 
-/* STATS */
+/* RIGHT SIDE */
+
+.profile-right{
+text-align:right;
+}
 
 .profile-stats{
 display:flex;
-gap:25px;
-margin-top:12px;
+gap:22px;
+margin-bottom:10px;
+}
+
+.profile-stats div{
+text-align:center;
+font-size:13px;
 }
 
 .profile-stats strong{
 font-size:18px;
+display:block;
+}
+
+/* ACTIONS */
+
+.profile-actions{
+display:flex;
+justify-content:flex-end;
+gap:10px;
+margin-top:10px;
+}
+
+.btn{
+padding:7px 14px;
+border-radius:7px;
+border:none;
+cursor:pointer;
+font-size:13px;
+}
+
+.follow-btn{
+background:#2563eb;
+color:white;
+}
+
+.edit-btn{
+background:#eee;
+}
+
+.icon-btn{
+background:#f1f1f1;
+border-radius:8px;
+padding:8px;
+cursor:pointer;
+display:flex;
+align-items:center;
+justify-content:center;
+}
+
+.icon-btn svg{
+width:18px;
+height:18px;
 }
 
 /* TABS */
@@ -143,14 +162,14 @@ border-top:2px solid black;
 .grid{
 display:grid;
 grid-template-columns:repeat(auto-fill,minmax(250px,1fr));
-gap:12px;
+gap:14px;
 margin-top:20px;
 }
 
 .post-card{
-position:relative;
+cursor:pointer;
 overflow:hidden;
-border-radius:8px;
+border-radius:10px;
 }
 
 .post-card img{
@@ -164,25 +183,25 @@ transition:.3s;
 transform:scale(1.05);
 }
 
-/* PROJECT CARD */
-
 .project-card{
 border:1px solid #eee;
-padding:15px;
-border-radius:8px;
+padding:16px;
+border-radius:10px;
 background:white;
+cursor:pointer;
 }
 
 .project-links{
 margin-top:8px;
 display:flex;
 gap:10px;
+font-size:13px;
 }
 
 .loading{
 text-align:center;
-color:#888;
 padding:40px;
+color:#888;
 }
 
 </style>
@@ -196,53 +215,37 @@ padding:40px;
 
 <div class="profile-header">
 
+<!-- LEFT -->
+
+<div class="profile-left">
+
 <div class="profile-avatar">
-<img id="profileAvatar" src="">
+<img id="profileAvatar">
 </div>
 
-<div class="profile-info">
-
-<div class="profile-top">
-
-<div>
+<div class="profile-main">
 
 <strong id="fullname"></strong>
 
-<div class="username">
+<div class="username">@<span id="username"></span></div>
 
-@<span id="username"></span>
-
-<a href="/profile/edit" class="edit-btn">
-✏ Edit
-</a>
-
+<div class="profile-meta">
+<span id="institution"></span>
+<span id="location"></span>
 </div>
 
-</div>
-
-<div class="profile-actions">
-
-<a href="/post/create">
-<button class="action-btn">+ Post</button>
-</a>
-
-<a href="/project/create">
-<button class="action-btn">+ Project</button>
-</a>
-
-</div>
-
-</div>
-
-<div class="profile-bio">
-
-<p id="bioText"></p>
-
-<p id="collegeText" class="username"></p>
-
-</div>
+<div id="bioText" class="profile-bio"></div>
 
 <div id="skills" class="skills"></div>
+
+</div>
+
+</div>
+
+
+<!-- RIGHT -->
+
+<div class="profile-right">
 
 <div class="profile-stats">
 
@@ -264,6 +267,29 @@ Following
 <div>
 <strong id="projectCount">0</strong>
 Projects
+</div>
+
+</div>
+
+
+<div class="profile-actions">
+
+<button id="followBtn" class="btn follow-btn" style="display:none">
+Follow
+</button>
+
+<a href="/profile/edit">
+<button id="editBtn" class="btn edit-btn" style="display:none">
+Edit Profile
+</button>
+</a>
+
+<div class="btn" onclick="location.href='/post/create'" style="background-color: rgb(202, 203, 195); display: none;" id="cpost">
+    Create post
+</div>
+
+<div class="btn" onclick="location.href='/project/create'" style="background-color: rgb(135, 188, 234); display: none;" id="cproj" >
+    Publish project
 </div>
 
 </div>
@@ -314,43 +340,63 @@ Projects
 
 async function loadProfileData(){
 
-const res = await fetch("/api/profile-data")
+const path = window.location.pathname
+
+let url = "/api/profile-data"
+
+/* check if url is /profile/<username> */
+
+const parts = path.split("/")
+
+if(parts.length === 3 && parts[2]){
+    url += "?username=" + parts[2]
+}
+
+const res = await fetch(url)
 const data = await res.json()
 
 const user = data.user
 
-/* USER INFO */
+/* USER */
 
-document.getElementById("fullname").innerText = user.fullname
-document.getElementById("username").innerText = user.username
-document.getElementById("bioText").innerText = user.bio || "No bio yet"
-document.getElementById("collegeText").innerText = user.college || ""
+fullname.innerText = user.full_name
+username.innerText = user.username
+bioText.innerText = user.bio || "No bio yet"
 
-const avatar = document.getElementById("profileAvatar")
+institution.innerText = user.institution || ""
+location.innerText = user.location || ""
 
-avatar.src = user.profile_url || "/static/images/user.png"
+profileAvatar.src = user.profile_pic || "/static/images/user.png"
 
-avatar.onerror = () => {
-avatar.src = "/static/images/user.png"
-}
 
 /* SKILLS */
 
-const skillsContainer = document.getElementById("skills")
-skillsContainer.innerHTML = ""
+skills.innerHTML = ""
 
-if(user.skills){
-user.skills.split(",").forEach(skill=>{
-skillsContainer.innerHTML += `<div class="skill-pill">${skill}</div>`
+data.skills.forEach(s=>{
+skills.innerHTML += `<div class="skill-pill">${s.skill_name}</div>`
 })
-}
+
 
 /* STATS */
 
-postCount.innerText = data.post_count
-projectCount.innerText = data.project_count
-followersCount.innerText = data.followers_count
-followingCount.innerText = data.following_count
+postCount.innerText = data.stats.posts
+projectCount.innerText = data.stats.projects
+followersCount.innerText = data.stats.followers
+followingCount.innerText = data.stats.following
+
+
+/* SELF PROFILE CHECK */
+
+if(data.is_self){
+editBtn.style.display = "inline-block"
+cpost.style.display="inline-block"
+cproj.style.display="inline-block"
+
+}else{
+followBtn.style.display = "inline-block"
+}
+
 
 /* POSTS + PROJECTS */
 
@@ -362,21 +408,24 @@ renderProjects(data.projects)
 
 
 function renderPosts(posts){
-console.log(posts)
+
 const grid = document.getElementById("postsGrid")
 
 grid.innerHTML = ""
 
-if(posts.length === 0){
-grid.innerHTML = "<div class='loading'>No posts yet</div>"
+if(posts.length===0){
+grid.innerHTML="<div class='loading'>No posts yet</div>"
 return
 }
 
 posts.forEach(p=>{
 
 grid.innerHTML += `
-<div class="post-card">
+<div class="post-card"
+onclick="openPost(${p.post_id})">
+
 <img src="${p.image_url}" loading="lazy">
+
 </div>
 `
 
@@ -390,17 +439,18 @@ function renderProjects(projects){
 
 const grid = document.getElementById("projectsGrid")
 
-grid.innerHTML = ""
+grid.innerHTML=""
 
-if(projects.length === 0){
-grid.innerHTML = "<div class='loading'>No projects yet</div>"
+if(projects.length===0){
+grid.innerHTML="<div class='loading'>No projects yet</div>"
 return
 }
 
 projects.forEach(p=>{
 
 grid.innerHTML += `
-<div class="project-card">
+<div class="project-card"
+onclick="openProject(${p.project_id})">
 
 <h4>${p.title}</h4>
 
@@ -408,9 +458,9 @@ grid.innerHTML += `
 
 <div class="project-links">
 
-${p.github_url ? `<a href="${p.github_url}" target="_blank">Github</a>` : ""}
+${p.github_url ? `<a href="${p.github_url}" target="_blank">Github</a>`:""}
 
-${p.demo_url ? `<a href="${p.demo_url}" target="_blank">Demo</a>` : ""}
+${p.demo_url ? `<a href="${p.demo_url}" target="_blank">Demo</a>`:""}
 
 </div>
 
@@ -422,6 +472,20 @@ ${p.demo_url ? `<a href="${p.demo_url}" target="_blank">Demo</a>` : ""}
 }
 
 
+
+/* NAVIGATION */
+
+function openPost(id){
+window.location.href="/post/"+id
+}
+
+function openProject(id){
+window.location.href="/project/"+id
+}
+
+
+
+/* TABS */
 
 function showTab(e,id){
 

@@ -4,9 +4,11 @@ import os
 import uuid
 from werkzeug.utils import secure_filename
 import cloudinary_config
-from queries.student_queries import create_student, check_student, get_user_by_id, update_bio, get_followers_count, get_following_count
-from queries.post_queries import create_post, get_posts_by_user, count_posts_by_user,get_feed_posts,toggle_post_like
+from queries.profile_queries import update_profile,update_user_skills,get_all_skills,get_user_profile,get_user_skills
+from queries.student_queries import create_student, check_student, get_user_profile_data, update_bio, get_followers_count, get_following_count,get_user_id_by_username
+from queries.post_queries import create_post, count_posts_by_user,get_feed_posts,toggle_post_like
 from queries.project_queries import create_project, get_projects_by_user, count_projects_by_user
+from queries.search_queries import search_students
 import cloudinary
 import cloudinary.uploader
 app = Flask(__name__)
@@ -59,29 +61,11 @@ def searchPage():
     
     return make_response(render_template('/search.html', active_page="search")),200
 
-
-@app.route("/profile")
+@app.route("/profile/<username>")
 @login_required
-def profile():
+def profile(username):
     return render_template("profile.html")
 
-
-@app.route("/profile/edit", methods=["GET","POST"])
-@login_required
-def edit_profile():
-
-    user = session.get("user")
-
-    if request.method == "POST":
-
-        bio = request.form.get("bio")
-
-        update_bio(user["student_id"], bio)
-
-
-        return redirect(url_for("profile"))
-
-    return render_template("profile_edit.html")
 
 
 @app.route("/post/create")
@@ -95,44 +79,103 @@ def create_post_page():
 def create_project_page():
     return render_template("add_project.html")
 
+
 @app.route("/api/profile-data")
 @login_required
 def profile_data():
-    user_id = session['user'].get('student_id')
-    row = get_user_by_id(user_id=user_id)
-    myuser = {
-    "student_id": row[0],
-    "fullname": row[1],
-    "username": row[2],
-    "email": row[3],
-    "password": row[4],
-    "profile_url": row[5],
-    "bio": row[6],
-    "college": row[7],
-    "location": row[8],
-    "skills": row[9],
-    "created_at": row[10]
-}
-    print(myuser)
-    
-    post_count = count_posts_by_user(user_id)
-    project_count = count_projects_by_user(user_id)
-    followers_count = get_followers_count(user_id)
-    following_count = get_following_count(user_id)
 
-    posts = get_posts_by_user(user_id)
-    projects = get_projects_by_user(user_id)
+    viewer_id = session["user"]["student_id"]
+
+
+    
+    username = request.args.get("username")
+    # getting the user_id 
+    user_id = get_user_id_by_username(username)
+    print()
+    # if username provided → fetch that profile
+    if username:
+        print(username)
+        data=get_user_profile_data(user_id[0]) #since tuple taking the first value (which is user_id of the given username)
+    else:
+        data = get_user_profile_data(viewer_id)
+
+    if not data:
+        return jsonify({"error": "User not found"}), 404
+
+
+    user = data["user"]
+    skills = data["skills"]
+    projects = data["projects"]
+    posts = data["posts"]
+
+
+    user_json = {
+        "student_id": user[0],
+        "full_name": user[1],
+        "username": user[2],
+        "email": user[3],
+        "profile_pic": user[4],
+        "bio": user[5],
+        "dob": user[6],
+        "institution": user[7],
+        "location": user[8]
+    }
+
+
+    skills_json = [
+        {
+            "skill_id": s[0],
+            "skill_name": s[1],
+            "category": s[2]
+        }
+        for s in skills
+    ]
+
+
+    projects_json = [
+        {
+            "project_id": p[0],
+            "title": p[1],
+            "description": p[2],
+            "github_url": p[3],
+            "demo_url": p[4],
+            "visibility": p[5],
+            "created_at": p[6]
+        }
+        for p in projects
+    ]
+
+
+    posts_json = [
+        {
+            "post_id": p[0],
+            "caption": p[1],
+            "image_url": p[2],
+            "location": p[3],
+            "published_at": p[4]
+        }
+        for p in posts
+    ]
+
 
     return jsonify({
-        "user":myuser,
-        "post_count": post_count,
-        "project_count": project_count,
-        "followers_count": followers_count,
-        "following_count": following_count,
-        "posts": posts,
-        "projects": projects
-    })
 
+        "user": user_json,
+
+        "stats": {
+            "posts": len(posts),
+            "projects": len(projects),
+            "followers": data["followers"],
+            "following": data["following"]
+        },
+
+        "skills": skills_json,
+        "projects": projects_json,
+        "posts": posts_json,
+
+        "is_self": viewer_id == user[0]
+
+    })
 
 @app.route("/logout", methods=["POST"])
 @login_required
@@ -319,6 +362,127 @@ def like_post():
         return jsonify({"error": "Database error"}), 500
 
     return jsonify(result)
+
+
+
+@app.route("/profile/edit", methods=["GET", "POST"])
+@login_required
+def profile_edit():
+
+    user_id = session["user"]["student_id"]
+
+    if request.method == "POST":
+
+        bio = request.form.get("bio")
+        dob = request.form.get("dob")
+        institution = request.form.get("institution")
+        location = request.form.get("location")
+
+        skills = request.form.getlist("skills")
+        file = request.files.get("profile_pic")
+
+        # validation
+        if not bio or not dob or not institution or not location:
+
+            user = get_user_profile(user_id)
+            skills_all = get_all_skills()
+            user_skills = get_user_skills(user_id)
+
+            return render_template(
+                "edit_profile.html",
+                user=user,
+                skills=skills_all,
+                user_skills=user_skills,
+                error="Please fill all the details before saving."
+            )
+
+        # default profile picture
+        profile = get_user_profile(user_id)
+        profile_pic = profile[4]
+
+        # upload new picture if provided
+        if file and file.filename != "":
+
+            if not allowed_file(file.filename):
+                user = get_user_profile(user_id)
+                skills_all = get_all_skills()
+                user_skills = get_user_skills(user_id)
+
+                return render_template(
+                    "edit_profile.html",
+                    user=user,
+                    skills=skills_all,
+                    user_skills=user_skills,
+                    error="Invalid image format."
+                )
+
+            upload_result = cloudinary.uploader.upload(
+                file,
+                folder="skillnet/profile_pictures"
+            )
+
+            profile_pic = upload_result["secure_url"]
+
+        # update profile
+        update_profile(
+            user_id,
+            bio,
+            dob,
+            institution,
+            location,
+            profile_pic
+        )
+
+        # update skills
+        update_user_skills(user_id, skills)
+
+        # update session
+        session["user"]["profileUrl"] = profile_pic
+        session["user"]["bio"] = bio
+
+        return redirect(url_for("profile", username=session["user"]["username"]))
+
+    # GET request
+    user = get_user_profile(user_id)
+    skills = get_all_skills()
+    user_skills = get_user_skills(user_id)
+
+    return render_template(
+        "edit_profile.html",
+        user=user,
+        skills=skills,
+        user_skills=user_skills
+    )
+
+
+@app.route("/api/search")
+@login_required
+def api_search():
+
+    query = request.args.get("q", "").strip()
+
+    if not query:
+        return jsonify({"results": []})
+
+    rows = search_students(query)
+
+    results = []
+
+    for r in rows:
+        results.append({
+            "student_id": r[0],
+            "full_name": r[1],
+            "username": r[2],
+            "avatar": r[3],
+            "institution": r[4],
+            "location": r[5],
+            "skills": r[6] or ""
+        })
+
+    return jsonify({"results": results})
+
+
+
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=8000)
 
