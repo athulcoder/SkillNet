@@ -5,7 +5,7 @@ import uuid
 from werkzeug.utils import secure_filename
 import cloudinary_config
 from queries.student_queries import create_student, check_student, get_user_by_id, update_bio, get_followers_count, get_following_count
-from queries.post_queries import create_post, get_posts_by_user, count_posts_by_user,get_feed_posts
+from queries.post_queries import create_post, get_posts_by_user, count_posts_by_user,get_feed_posts,toggle_post_like
 from queries.project_queries import create_project, get_projects_by_user, count_projects_by_user
 import cloudinary
 import cloudinary.uploader
@@ -292,12 +292,33 @@ def edit_bio_route():
 @login_required
 def api_feed():
 
-    posts = get_feed_posts()
+
+    posts = get_feed_posts(session['user'].get('student_id'))
     print(posts )
     return jsonify({
         "posts": posts
     })
 
+
+
+
+@app.route("/api/post/like", methods=["POST"])
+def like_post():
+
+    user_id = session['user'].get('student_id')
+
+    if not user_id:
+        return jsonify({"error": "Unauthorized"}), 401
+
+    data = request.get_json()
+    post_id = data.get("post_id")
+
+    result = toggle_post_like(user_id, post_id)
+
+    if not result:
+        return jsonify({"error": "Database error"}), 500
+
+    return jsonify(result)
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=8000)
 
